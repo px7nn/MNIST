@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MNIST Terminal Classifier</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="terminal-window">
+        <!-- Terminal Header Bar -->
+        <div class="terminal-header">
+            <div class="terminal-dots">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+            </div>
+            <div class="terminal-title">mnist-classifier - bash - 80×24</div>
+        </div>
+        
+        <!-- Terminal Content -->
+        <div class="terminal-content">
+            <!-- Left Side: Drawing area -->
+            <div class="left-panel">
+                <div class="panel-header">// DRAWING_INPUT</div>
+                <div class="canvas-wrapper">
+                    <canvas id="draw" width="280" height="280"></canvas>
+                </div>
+                <div class="controls">
+                    <button id="predict" class="btn">[ RUN_PREDICT ]</button>
+                    <button id="clear" class="btn">[ CLEAR_CANVAS ]</button>
+                </div>
+            </div>
+            
+            <!-- Right Side: Predictions / Output -->
+            <div class="right-panel">
+                <div class="panel-header">// PREDICTION_OUTPUT</div>
+                <div class="console-box">
+                    <div class="ascii-art">
+   __  __ _   _ ___ ____ _____ 
+  |  \/  | \ | |_ _/ ___|_   _|
+  | |\/| |  \| || |\___ \ | |  
+  | |  | | |\  || | ___) || |  
+  |_|  |_|_| \_|___|____/ |_|  
+                    </div>
+                    <div id="status-line" class="console-line text-dim">Initializing wasm environment...</div>
+                    <div class="separator">-----------------------------------------</div>
+                    
+                    <div class="predictions-list" id="predictions-list">
+                        <!-- Loaded dynamically by ui.js -->
+                    </div>
+                    
+                    <div class="separator">-----------------------------------------</div>
+                    <div class="most-confident" id="most-confident">
+                        &gt; DETECTED: <span class="blink">_</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="./scripts/mlp.js"></script>
+    <script src="./scripts/load_model.js"></script>
+    <script src="./scripts/canvas.js"></script>
+    <script src="./scripts/ui.js"></script>
+</body>
+</html>

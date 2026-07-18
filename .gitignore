@@ -1,0 +1,9 @@
+*.exe
+*.out
+
+datasets/
+
+# Pretrained model because it is packed with the .wasm
+*.mlp
+
+*tmp*
