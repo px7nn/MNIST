@@ -87,18 +87,6 @@ body::after {
     height: 520px;
 }
 
-@media (max-width: 992px) {
-    .terminal-content {
-        flex-direction: column;
-        height: auto;
-        overflow-y: auto;
-    }
-    body {
-        overflow: auto;
-        padding: 20px 0;
-    }
-}
-
 /* Common Panel Header */
 .panel-header {
     width: 100%;
@@ -128,6 +116,7 @@ body::after {
     box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
     transition: border-color 0.3s;
     margin-bottom: 8px;
+    max-width: 100%;
 }
 
 .canvas-wrapper:hover {
@@ -137,6 +126,8 @@ body::after {
 #draw {
     display: block;
     cursor: crosshair;
+    max-width: 100%;
+    height: auto;
 }
 
 .scaled-canvas-wrapper {
@@ -341,4 +332,67 @@ body::after {
 
 @keyframes blinker {
     50% { opacity: 0; }
+}
+
+/* Mobile & Tablet Responsiveness */
+@media (max-width: 992px) {
+    body {
+        height: auto;
+        min-height: 100vh;
+        overflow-y: auto;
+        padding: 16px 8px;
+    }
+    
+    .terminal-window {
+        width: 100%;
+        max-width: 100%;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    }
+    
+    .terminal-content {
+        flex-direction: column;
+        height: auto;
+    }
+    
+    .left-panel, .center-panel, .right-panel {
+        flex: 1 1 auto !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        border-right: none !important;
+        border-bottom: 1px solid #1f2430;
+        padding: 24px 16px;
+    }
+    
+    .right-panel {
+        border-bottom: none;
+    }
+    
+    .canvas-wrapper, .scaled-canvas-wrapper {
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .matrix-box {
+        padding: 24px 8px;
+    }
+    
+    #ascii-matrix {
+        font-size: 2.3vw; /* Scales dynamically with screen width on mobile */
+        line-height: 1.05;
+        letter-spacing: -0.5px;
+    }
+}
+
+@media (max-width: 480px) {
+    #ascii-matrix {
+        font-size: 2.8vw; /* Slightly larger scale for very small viewports */
+    }
+    
+    .pred-bar {
+        display: none; /* Hide progress bar visual on extra small screens to save space */
+    }
+    
+    .pred-row {
+        justify-content: space-between;
+    }
 }

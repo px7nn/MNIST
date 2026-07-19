@@ -223,8 +223,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const rect = canvasEl.getBoundingClientRect();
         const touch = e.touches[0];
         return {
-            x: touch.clientX - rect.left,
-            y: touch.clientY - rect.top
+            x: (touch.clientX - rect.left) * (canvasEl.width / rect.width),
+            y: (touch.clientY - rect.top) * (canvasEl.height / rect.height)
         };
     }
 
