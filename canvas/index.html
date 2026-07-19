@@ -15,34 +15,36 @@
                 <span class="dot yellow"></span>
                 <span class="dot green"></span>
             </div>
-            <div class="terminal-title">mnist-classifier - bash - 80×24</div>
+            <div class="terminal-title">mnist-classifier - bash - 120×28</div>
         </div>
         
         <!-- Terminal Content -->
         <div class="terminal-content">
-            <!-- Left Side: Drawing area -->
+            <!-- Panel 1: Input -->
             <div class="left-panel">
                 <div class="panel-header">// DRAWING_INPUT</div>
                 <div class="canvas-wrapper">
                     <canvas id="draw" width="280" height="280"></canvas>
                 </div>
-                <div class="controls">
-                    <button id="predict" class="btn">[ RUN_PREDICT ]</button>
-                    <button id="clear" class="btn">[ CLEAR_CANVAS ]</button>
+                
+                <div class="panel-header" style="margin-top: 18px;">// DOWNSCALED_28x28</div>
+                <div class="scaled-canvas-wrapper">
+                    <canvas id="scaled-canvas" width="28" height="28"></canvas>
                 </div>
             </div>
             
-            <!-- Right Side: Predictions / Output -->
+            <!-- Panel 2: ASCII Matrix representation -->
+            <div class="center-panel">
+                <div class="panel-header">// raw_pixel_matrix_784</div>
+                <div class="matrix-box">
+                    <pre id="ascii-matrix"></pre>
+                </div>
+            </div>
+            
+            <!-- Panel 3: Prediction Output -->
             <div class="right-panel">
-                <div class="panel-header">// PREDICTION_OUTPUT</div>
+                <div class="panel-header">// network_inference</div>
                 <div class="console-box">
-                    <div class="ascii-art">
-   __  __ _   _ ___ ____ _____ 
-  |  \/  | \ | |_ _/ ___|_   _|
-  | |\/| |  \| || |\___ \ | |  
-  | |  | | |\  || | ___) || |  
-  |_|  |_|_| \_|___|____/ |_|  
-                    </div>
                     <div id="status-line" class="console-line text-dim">Initializing wasm environment...</div>
                     <div class="separator">-----------------------------------------</div>
                     
@@ -53,6 +55,11 @@
                     <div class="separator">-----------------------------------------</div>
                     <div class="most-confident" id="most-confident">
                         &gt; DETECTED: <span class="blink">_</span>
+                    </div>
+                    
+                    <div class="controls">
+                        <button id="predict" class="btn">[ RUN_INFERENCE ]</button>
+                        <button id="clear" class="btn">[ CLEAR_SYSTEM ]</button>
                     </div>
                 </div>
             </div>

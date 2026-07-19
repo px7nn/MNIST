@@ -5,12 +5,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const predictBtn = document.getElementById('predict');
     const clearBtn = document.getElementById('clear');
     const canvasEl = document.getElementById('draw');
+    const scaledCanvas = document.getElementById('scaled-canvas');
+    const scaledCtx = scaledCanvas.getContext('2d');
+    const asciiMatrixEl = document.getElementById('ascii-matrix');
 
-    // Create a private canvas for downscaling to 28x28
-    const uiSmall = document.createElement('canvas');
-    uiSmall.width = 28;
-    uiSmall.height = 28;
-    const uiSctx = uiSmall.getContext('2d');
+    // Override main canvas stroke width to match MNIST thickness (around 20px)
+    if (canvasEl) {
+        const mainCtx = canvasEl.getContext('2d');
+        if (mainCtx) {
+            mainCtx.lineWidth = 20;
+        }
+    }
 
     // Check if model is initialized and update the status line
     function checkModelLoaded() {
@@ -32,11 +37,27 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (e) {
                 console.error(e);
             }
-            statusLine.innerHTML = `<span class="text-warning">[SYSTEM] Loading model file into WebAssembly memory...</span>`;
+            statusLine.innerHTML = `<span class="text-warning">[SYSTEM] Loading model file...</span>`;
         }
     }
 
-    // Render prediction list and bars
+    // Render 28x28 float array as ASCII text density map
+    function renderAsciiMatrix(input = Array(784).fill(0)) {
+        const chars = ' .:-=+*#%@█';
+        let matrixText = '';
+        for (let y = 0; y < 28; ++y) {
+            let row = '';
+            for (let x = 0; x < 28; ++x) {
+                const val = input[y * 28 + x];
+                const idx = Math.min(Math.floor(val * chars.length), chars.length - 1);
+                row += chars[idx] + ' '; // Space for square aspect ratio
+            }
+            matrixText += row + '\n';
+        }
+        asciiMatrixEl.textContent = matrixText;
+    }
+
+    // Render prediction list and progress bars
     function renderPredictions(probabilities = Array(10).fill(0)) {
         let html = '';
         let maxIdx = -1;
@@ -87,24 +108,76 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Execute prediction pass
+    // Execute prediction pass with MNIST-style cropping and centering
     function runPrediction() {
         if (typeof mlp === 'undefined' || !mlp) {
             statusLine.innerHTML = `<span class="text-error">[ERROR] Cannot predict: Model not loaded.</span>`;
             return;
         }
 
-        uiSctx.clearRect(0, 0, 28, 28);
-        uiSctx.drawImage(canvasEl, 0, 0, 28, 28);
+        const mainCtx = canvasEl.getContext('2d');
+        const mainImg = mainCtx.getImageData(0, 0, 280, 280);
 
-        const img = uiSctx.getImageData(0, 0, 28, 28);
-        const input = new Float64Array(784);
-        
-        // Convert canvas image pixels to normalized gray levels
-        for (let i = 0; i < 784; ++i) {
-            input[i] = img.data[i * 4 + 3] / 255.0;
+        // Find bounding box of the drawing
+        let minX = 280, maxX = 0, minY = 280, maxY = 0;
+        let hasDrawing = false;
+
+        for (let y = 0; y < 280; ++y) {
+            for (let x = 0; x < 280; ++x) {
+                const idx = (y * 280 + x) * 4;
+                const alpha = mainImg.data[idx + 3];
+                if (alpha > 10) { // Alpha threshold to filter noise
+                    hasDrawing = true;
+                    if (x < minX) minX = x;
+                    if (x > maxX) maxX = x;
+                    if (y < minY) minY = y;
+                    if (y > maxY) maxY = y;
+                }
+            }
         }
 
+        scaledCtx.clearRect(0, 0, 28, 28);
+
+        if (!hasDrawing) {
+            renderPredictions(Array(10).fill(0));
+            renderAsciiMatrix(Array(784).fill(0));
+            statusLine.innerHTML = `<span class="text-dim">Awaiting drawing...</span>`;
+            return;
+        }
+
+        // Calculate drawing dimensions
+        const width = maxX - minX + 1;
+        const height = maxY - minY + 1;
+
+        // MNIST Normalization: resize longest side to 20px
+        const scale = 20 / Math.max(width, height);
+        const targetW = width * scale;
+        const targetH = height * scale;
+
+        // Centering offsets inside 28x28 canvas
+        const offsetX = (28 - targetW) / 2;
+        const offsetY = (28 - targetH) / 2;
+
+        // Clear and draw cropped/scaled/centered digit
+        scaledCtx.imageSmoothingEnabled = true;
+        scaledCtx.drawImage(
+            canvasEl,
+            minX, minY, width, height, // Source crop box
+            offsetX, offsetY, targetW, targetH // Target centered 20x20 box
+        );
+
+        const img = scaledCtx.getImageData(0, 0, 28, 28);
+        const input = new Float64Array(784);
+        
+        // Convert canvas image pixels to normalized gray levels using alpha channel
+        for (let i = 0; i < 784; ++i) {
+            input[i] = img.data[i * 4 + 3] / 255.0; // Corrected: Use alpha channel
+        }
+
+        // Render input representation
+        renderAsciiMatrix(input);
+
+        // Feed input to network
         mlp.setInput(input);
         if (!mlp.predict()) {
             mlp.logError("Predict failed");
@@ -142,7 +215,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Control buttons event listeners
     predictBtn.addEventListener('click', runPrediction);
     clearBtn.addEventListener('click', () => {
+        scaledCtx.clearRect(0, 0, 28, 28);
         renderPredictions(Array(10).fill(0));
+        renderAsciiMatrix(Array(784).fill(0));
         statusLine.innerHTML = `<span class="text-dim">Canvas cleared. Awaiting drawing...</span>`;
     });
 
@@ -159,6 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial state rendering
     renderPredictions(Array(10).fill(0));
+    renderAsciiMatrix(Array(784).fill(0));
     checkModelLoaded();
 
     // Secondary interval check in case loaded state changes asynchronously
