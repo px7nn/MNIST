@@ -190,26 +190,79 @@ document.addEventListener('DOMContentLoaded', () => {
         statusLine.innerHTML = `<span class="text-success">[OK] Inference pass complete.</span>`;
     }
 
-    // Drawing state listeners for live updating
-    let isDrawing = false;
+    // DRAWING STATE LISTENERS
+
+    // 1. Mouse Listeners (Desktop)
+    let isDrawingMouse = false;
 
     canvasEl.addEventListener('mousedown', () => {
-        isDrawing = true;
+        isDrawingMouse = true;
     });
 
     canvasEl.addEventListener('mousemove', () => {
-        if (isDrawing) {
+        if (isDrawingMouse) {
             runPrediction();
         }
     });
 
     canvasEl.addEventListener('mouseup', () => {
-        isDrawing = false;
+        isDrawingMouse = false;
         runPrediction();
     });
 
     canvasEl.addEventListener('mouseleave', () => {
-        isDrawing = false;
+        isDrawingMouse = false;
+    });
+
+    // 2. Touch Listeners (Mobile / Tablet compatibility)
+    let isDrawingTouch = false;
+    let lastTouchX = 0;
+    let lastTouchY = 0;
+
+    function getTouchPos(e) {
+        const rect = canvasEl.getBoundingClientRect();
+        const touch = e.touches[0];
+        return {
+            x: touch.clientX - rect.left,
+            y: touch.clientY - rect.top
+        };
+    }
+
+    canvasEl.addEventListener('touchstart', (e) => {
+        isDrawingTouch = true;
+        const pos = getTouchPos(e);
+        lastTouchX = pos.x;
+        lastTouchY = pos.y;
+        e.preventDefault(); // Prevent standard scroll-to-refresh / scrolling
+    }, { passive: false });
+
+    canvasEl.addEventListener('touchmove', (e) => {
+        if (!isDrawingTouch) return;
+        const pos = getTouchPos(e);
+        
+        const mainCtx = canvasEl.getContext('2d');
+        if (mainCtx) {
+            mainCtx.beginPath();
+            mainCtx.moveTo(lastTouchX, lastTouchY);
+            mainCtx.lineTo(pos.x, pos.y);
+            mainCtx.stroke();
+        }
+        
+        lastTouchX = pos.x;
+        lastTouchY = pos.y;
+        
+        runPrediction();
+        e.preventDefault(); // Prevent scrolling on dragging
+    }, { passive: false });
+
+    canvasEl.addEventListener('touchend', (e) => {
+        isDrawingTouch = false;
+        runPrediction();
+        e.preventDefault();
+    }, { passive: false });
+
+    canvasEl.addEventListener('touchcancel', () => {
+        isDrawingTouch = false;
     });
 
     // Control buttons event listeners
