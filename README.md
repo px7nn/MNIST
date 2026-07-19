@@ -2,7 +2,7 @@
 
   ## MNIST Classifier
 
-  <img src="https://github.com/user-attachments/assets/bc3a2425-90ef-462d-964d-982953df688e" alt="MNIST Terminal Interface" width="750"/>
+  <img src="https://github.com/user-attachments/assets/9dcb2d72-71f3-4ff9-a1d0-950e952f6b28" alt="MNIST Terminal Interface" width="640"/>
   <p><sub><i>Visualizing the drawing-to-inference pipeline directly inside a custom CRT console dashboard.</i></sub></p>
 
   ###### Powered by **[MLP.h](https://github.com/px7nn/MLP.h) (v0.8.1)**.
